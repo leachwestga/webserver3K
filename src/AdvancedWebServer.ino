@@ -175,8 +175,13 @@ void setup(void) {
   });
 
   server.on("/inputpage", [](){
-    Serial.println(inputpage);
+    // Serial.println(inputpage);
     server.send(200,"text/html", inputpage);
+  });
+
+  server.on("/binputpage", [](){
+    // Serial.println(inputpage);
+    server.send(200,"text/html", binputpage);
   });
 
   server.on("/textin", handleInputText);
