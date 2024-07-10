@@ -28,11 +28,15 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+// https://forum.arduino.cc/t/web-server-on-esp32/1066320
+// https://www.hackster.io/425297/webservers-on-esp32-edffef
+
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <WebServer.h>
 #include <ESPmDNS.h>
 #include "mainpage.h"
+#include <SPIFFS.h>
 
 const char *ssid = "Chouette Manor";
 const char *password = "chouette7cie";
@@ -131,7 +135,24 @@ void handleInputText() {
 }
 
 
+int sendfile(){
+  File file = SPIFFS.open("/scratch.html");
+  if(!file){
+    Serial.println("Unable to Open/Read File");
+    return 0;
+  }
+  String out = "";
+  Serial.println("File Content:");
+  while(file.available()){
+    char a = file.read();
+     Serial.write(a);
+     out+= a;
+  }
+ server.send(200, "text/html", out);
 
+  file.close();
+  return 1;
+}
 
 
 void setup(void) {
@@ -158,8 +179,14 @@ void setup(void) {
     Serial.println("MDNS responder started");
   }
 
+  if(!SPIFFS.begin(true)){
+    Serial.println("SPIFFS Not Found");
+    return;
+  }
+
   server.on("/", handleRoot);
   server.on("/test.svg", drawGraph);
+  server.on("/readfile", sendfile);
   server.on("/inline", []() {
     server.send(200, "text/plain", "this works as well");
   });
